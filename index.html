@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Football Kit Flip</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(to bottom, #0052cc, #00c6ff);
+            color: white;
+            overflow: hidden;
+        }
+
+        .flip-container {
+            position: relative;
+            width: 300px;
+            height: 400px;
+            perspective: 1000px;
+        }
+
+        .flip-card {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            transform-style: preserve-3d;
+            transition: transform 0.3s ease-out; /* Smooth transition */
+        }
+
+        .flip-card .front, .flip-card .back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+        }
+
+        .flip-card .front {
+            background-image: url('front.jpg');
+            background-size: cover;
+            background-position: center;
+        }
+
+        .flip-card .back {
+            background-image: url('back.jpg');
+            background-size: cover;
+            background-position: center;
+            transform: rotateY(180deg);
+        }
+    </style>
+</head>
+<body>
+    <h1 style="position: absolute; top: 10px; left: 50%; transform: translateX(-50%);">Interactive Football Kit</h1>
+    <div class="flip-container">
+        <div class="flip-card" id="flipCard">
+            <div class="front"></div>
+            <div class="back"></div>
+        </div>
+    </div>
+
+    <script>
+        const flipCard = document.getElementById('flipCard');
+        let rotationY = 0; // Current rotation angle in degrees
+        let isDragging = false;
+        let startX = 0; // Starting X position of drag/touch
+        let deltaX = 0; // Track drag distance
+        let isFlipping = false; // Prevent multiple flips at once
+
+        // Mouse and Touch Events
+        function onMouseDown(event) {
+            if (isFlipping) return; // Prevent interaction while flipping
+            isDragging = true;
+            startX = event.clientX || event.touches[0].clientX;
+            flipCard.style.transition = ''; // Disable smooth snapping during drag
+        }
+
+        function onMouseMove(event) {
+            if (!isDragging || isFlipping) return;
+
+            // Get current X position
+            const currentX = event.clientX || event.touches[0].clientX;
+
+            // Calculate drag distance
+            deltaX = currentX - startX;
+
+            // Update rotation during drag
+            flipCard.style.transform = `rotateY(${rotationY + deltaX * 0.5}deg)`; // Adjust drag sensitivity
+        }
+
+        function onMouseUp() {
+            if (!isDragging || isFlipping) return;
+            isDragging = false;
+
+            // Determine flip direction and update rotation
+            if (deltaX > 50) { // Swipe right
+                rotationY += 180;
+            } else if (deltaX < -50) { // Swipe left
+                rotationY -= 180;
+            }
+
+            // Smooth transition to final rotation
+            isFlipping = true;
+            flipCard.style.transition = 'transform 0.3s ease-out';
+            flipCard.style.transform = `rotateY(${rotationY}deg)`;
+
+            // Reset variables and prevent multiple flips
+            setTimeout(() => {
+                isFlipping = false;
+                deltaX = 0; // Reset drag distance
+            }, 300); // Match transition duration
+        }
+
+        // Attach event listeners
+        flipCard.addEventListener('mousedown', onMouseDown);
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+
+        flipCard.addEventListener('touchstart', onMouseDown);
+        document.addEventListener('touchmove', onMouseMove);
+        document.addEventListener('touchend', onMouseUp);
+    </script>
+</body>
+</html>
